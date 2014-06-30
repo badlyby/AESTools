@@ -19,10 +19,9 @@ if __name__ == "__main__":
 			outname = sys.argv[1][0:nlen-4]
 		else:
 			outname = sys.argv[1]+".deaes"
-	key = hashlib.sha1(password+salt).digest()+ '\xAA\xBB\xCC\xDD'
+	key = file("aes.key",'rb').read()
 	data = file(sys.argv[1], 'rb').read()
+	lng = struct.unpack('L',data[0:8])[0]
 	decryptor = AES.new(key, mode)
-	decrypted = decryptor.decrypt(data)
-	lng = struct.unpack('L',decrypted[0:8])[0]
-	unpacked = decrypted[8:lng+8]
-	file(outname, 'wb').write(unpacked)
+	decrypted = decryptor.decrypt(data[8:])
+	file(outname, 'wb').write(decrypted[:lng])

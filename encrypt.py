@@ -2,7 +2,6 @@
 
 import sys
 import struct
-import hashlib
 from Crypto.Cipher import AES
 
 password = "123456"
@@ -15,13 +14,16 @@ if __name__ == "__main__":
 		outname = sys.argv[2]
 	else:
 		outname = sys.argv[1]+".aes"
-	key = hashlib.sha1(password+salt).digest()+ '\xAA\xBB\xCC\xDD'
+	key = file("aes.key",'rb').read()
 	data = file(sys.argv[1], 'rb').read()
 	lng = len(data)
-	fill = (int((lng + 8 + 15) / 16) * 16) - lng - 8
+	fill = (int((lng + 15) / 16) * 16) - lng
 	head = struct.pack('L',lng)
-	packs = head + data + '\xFF' * fill
+	packs = data + '\xFF' * fill
 	encryptor = AES.new(key, mode)
 	encrypted = encryptor.encrypt(packs)
-	file(outname, 'wb').write(encrypted)
+	outfile = file(outname, 'wb')
+	outfile.write(head)
+	outfile.write(encrypted)
+	outfile.close()
 
